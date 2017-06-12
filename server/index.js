@@ -1,12 +1,10 @@
 /* eslint consistent-return:0 */
-require('../build/check-versions')();
-
 const express = require('express');
 const path = require('path');
 const opn = require('opn');
 const proxyMiddleware = require('http-proxy-middleware');
 const setup = require('./middlewares/frontendMiddleware');
-const config = require('../config/environments')['development'];
+const config = require('../config/environments')[process.env.NODE_ENV || 'development'];
 
 // default port where dev server listens for incoming traffic
 const port = process.env.PORT || config.port || 8080;

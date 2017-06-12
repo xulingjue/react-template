@@ -1,6 +1,7 @@
 const path = require('path');
 const chalk = require('chalk');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const autoprefixer = require('autoprefixer');
 const config = require('../environments')['base'];
 
 function resolve (dir) {
@@ -59,7 +60,7 @@ module.exports = {
   },
   plugins: [
     new ProgressBarPlugin({
-      format: ' build [:bar]' + chalk.green.bold(':percent') + ' :msg :elapsed',
+      format: ' building [:bar]' + chalk.green.bold(':percent') + ' :msg :elapsed',
       clear: false
     })
   ]

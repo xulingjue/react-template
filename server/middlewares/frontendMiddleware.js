@@ -30,6 +30,12 @@ const addDevMiddlewares = (app, webpackConfig, next) => {
   app.use(compression());
   app.use(devMiddleware);
   app.use(hotMiddleware);
+
+  app.get(/polyfill\.js/, (req, res) => {
+    const filename = req.path.replace(/^\//, '');
+    res.sendFile(path.resolve(__dirname, '../../node_modules/babel-polyfill/dist', filename));
+  });
+
   app.use('/', express.static(resolve('src/static')));
 
   devMiddleware.waitUntilValid(() => next());

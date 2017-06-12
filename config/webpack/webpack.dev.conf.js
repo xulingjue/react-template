@@ -1,4 +1,6 @@
+const fs = require('fs');
 const path = require('path');
+const cheerio = require('cheerio');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const baseWebpackConfig = require('./webpack.base.conf');
@@ -15,7 +17,14 @@ function resolve (dir) {
 Object.keys(baseWebpackConfig.entry).forEach(function (name) {
   baseWebpackConfig.entry[name] = [
     'eventsource-polyfill',
-    'webpack-hot-middleware/client?reload=true'
+    'react-hot-loader/patch',
+    // activate HMR for React
+    'webpack-hot-middleware/client?reload=true',
+    // bundle the client for webpack-dev-server
+    // and connect to the provided endpoint
+    'webpack/hot/only-dev-server',
+    // bundle the client for hot reloading
+    // only- means to only hot reload for successful updates
   ].concat(baseWebpackConfig.entry[name]);
 });
 
@@ -27,7 +36,8 @@ module.exports = merge(baseWebpackConfig, {
     })
   },
   // cheap-module-eval-source-map is faster for development
-  devtool: '#cheap-module-eval-source-map',
+  // devtool: '#cheap-module-eval-source-map',
+  devtool: 'inline-source-map',
   plugins: [
     new webpack.DefinePlugin({
       'process.env': config.envVariables
@@ -38,9 +48,19 @@ module.exports = merge(baseWebpackConfig, {
     // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: resolve('src/index.html'),
+      templateContent: templateContent(),
       inject: true
     }),
     new FriendlyErrorsPlugin()
   ]
 });
+
+function templateContent() {
+  const html = fs.readFileSync(resolve('src/index.html')).toString();
+
+  const $ = cheerio.load(html);
+  $('title').text('React Template');
+  $('head').append(`<script src='/polyfill.js'></script>`);
+
+  return $.html();
+}

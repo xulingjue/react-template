@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+const cheerio = require('cheerio');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -17,7 +19,8 @@ const webpackConfig = merge(baseWebpackConfig, {
   module: {
     rules: loaders.styleLoaders({
       sourceMap: false,
-      cssModules: config.cssModules
+      cssModules: config.cssModules,
+      extract: true
     })
   },
   devtool: false,
@@ -37,7 +40,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     }),
     // extract css into its own file
     new ExtractTextPlugin({
-      filename: '[name].[contenthash].css'
+      filename: '[name].[contenthash].css',
+      allChunks: true
     }),
     // Compress extracted CSS. We are using this plugin so that possible
     // duplicated CSS from different components can be deduped.
@@ -51,7 +55,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: resolve('src/index.html'),
+      templateContent: templateContent(),
       inject: true,
       minify: {
         removeComments: true,
@@ -86,9 +90,12 @@ const webpackConfig = merge(baseWebpackConfig, {
     // copy custom static assets
     new CopyWebpackPlugin([
       {
-        from: resolve('src/static'),
-        to: config.outputPath,
+        context: resolve('src/static'),
+        from: '**/*',
         ignore: ['.*']
+      },
+      {
+        from: resolve('node_modules/babel-polyfill/dist/polyfill.min.js')
       }
     ])
   ]
@@ -97,6 +104,16 @@ const webpackConfig = merge(baseWebpackConfig, {
 if (config.bundleAnalyzerReport) {
   const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
   webpackConfig.plugins.push(new BundleAnalyzerPlugin());
+}
+
+function templateContent() {
+  const html = fs.readFileSync(resolve('src/index.html')).toString();
+
+  const $ = cheerio.load(html);
+  $('title').text('React Template');
+  $('head').append(`<script src='/polyfill.min.js'></script>`);
+
+  return $.html();
 }
 
 module.exports = webpackConfig;

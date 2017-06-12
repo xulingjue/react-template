@@ -1,8 +1,9 @@
-import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import { AppContainer } from 'react-hot-loader';
 import createStore from './store/createStore';
-import App from './containers/App';
+import RootApp from './components/RootApp';
 
 // ------------------------------------
 // Initialize Store
@@ -16,9 +17,17 @@ const store = createStore(initialState);
 // ------------------------------------
 const MOUNT_NODE = document.getElementById('app');
 
-let render = () => {
-  ReactDOM.render(<App store={store} />, MOUNT_NODE);
+const render = (Component) => {
+  ReactDOM.render(
+    <AppContainer>
+      <Provider store={store}>
+        <Component />
+      </Provider>
+    </AppContainer>,
+    MOUNT_NODE);
 };
+
+render(RootApp);
 
 // ------------------------------------
 // Initialize Developer Tools
@@ -28,29 +37,8 @@ let render = () => {
 if (process.env.NODE_ENV === 'development') {
   // Hot module replacement
   if (module.hot) {
-    const renderApp = render;
-    const renderError = (error) => {
-      // Show app error
-      const RedBox = require('redbox-react').default;
-
-      ReactDOM.render(<RedBox error={error} />, MOUNT_NODE);
-    };
-
-    render = () => {
-      try {
-        renderApp();
-      } catch (error) {
-        renderError(error);
-      }
-    };
-
-    module.hot.accept('./containers/App', () => {
-      setImmediate(() => {
-        ReactDOM.unmountComponentAtNode(MOUNT_NODE);
-        render();
-      });
+    module.hot.accept('./components/RootApp', () => {
+      render(RootApp);
     });
   }
 }
-
-render();

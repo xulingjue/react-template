@@ -2,69 +2,84 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 
 /**
- * Generate css rules
+ * Generate default css loaders
  */
 exports.cssLoaders = function (options) {
   options = options || {};
-  let defaultLoaders = [];
+  let loaders = [];
 
-  defaultLoaders.push({ loader: 'style-loader' });
-  defaultLoaders.push({
+  if (!options.extract) {
+    loaders.push({
+      loader: 'style-loader'
+    });
+  }
+  loaders.push({
     loader: 'css-loader',
     options: {
       minimize: options.minimize,
       sourceMap: options.sourceMap,
       modules: options.cssModules,
-      localIdentName: options.cssModules && '[name]__[local]--[hash:base64:5]'
+      localIdentName: options.cssModules && '[name]__[local]--[hash:base64:5]',
+      importLoaders: options.cssModules && options.importLoaders || 0
     }
   });
   if (options.cssModules) {
-    defaultLoaders.push({ loader: path.resolve(__dirname, 'css-module-fix') });
+    loaders.push({ loader: path.resolve(__dirname, 'css-module-fix') });
+  }
+  loaders.push({
+    loader: 'postcss-loader',
+    options: {
+      plugins: () => [require('autoprefixer')()]
+    }
+  });
+
+  return loaders;
+};
+
+/**
+ * Generate custom style loader
+ * @param loader
+ * @param options
+ * @param defaultOptions Options for default loaders
+ */
+exports.generateCSSLoaders = function (loader, options, defaultOptions) {
+  let loaders = exports.cssLoaders(defaultOptions);
+  if (loader) {
+    loaders.push({
+      loader: loader + '-loader',
+      options: options || {}
+    });
   }
 
-  // generate loader string to be used with extract text plugin
-  function generateLoaders (loader, loaderOptions) {
-    let loaders = defaultLoaders;
-    if (loader) {
-      loaders.push({
-        loader: loader + '-loader',
-        options: loaderOptions || {}
-      });
-    }
-
-    // Extract CSS when that option is specified
-    // (which is the case during production build)
-    if (options.extract) {
-      return ExtractTextPlugin.extract({
-        use: loaders
-      });
-    } else {
-      return loaders;
-    }
-  }
-
-  return {
-    css: generateLoaders(),
-    postcss: generateLoaders(),
-    less: generateLoaders('less'),
-    // sass: generateLoaders('sass', { indentedSyntax: true }),
-    // scss: generateLoaders('sass'),
-    // stylus: generateLoaders('stylus'),
-    // styl: generateLoaders('stylus')
+  // Extract CSS when that option is specified
+  // (which is the case during production build)
+  if (defaultOptions.extract) {
+    return ExtractTextPlugin.extract({
+      fallback: 'style-loader',
+      use: loaders
+    });
+  } else {
+    return loaders;
   }
 };
 
-// Generate loaders for standalone style files
-
+/**
+ * Generate loaders for standalone style files
+ * @param options
+ */
 exports.styleLoaders = function (options) {
-  let output = [];
-  let loaders = exports.cssLoaders(options);
-  for (let extension in loaders) {
-    let loader = loaders[extension];
-    output.push({
-      test: new RegExp('\\.' + extension + '$'),
-      use: loader
-    });
-  }
-  return output;
+  return [
+    {
+      test: /\.css$/,
+      use: exports.generateCSSLoaders(null, {}, Object.assign({}, options, { cssModules: false }))
+    },
+    {
+      test: /_nm\.less$/,
+      use: exports.generateCSSLoaders('less', {}, Object.assign({}, options, { cssModules: false, importLoaders: 3 }))
+    },
+    {
+      test: /^((?!(_nm)).)*\.less$/,
+      use: exports.generateCSSLoaders('less', {}, Object.assign({}, options, { importLoaders: 3 }))
+    }
+  ];
 };
