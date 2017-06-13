@@ -1,15 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
 import createStore from './store/createStore';
-import RootApp from './components/RootApp';
 
 // ------------------------------------
 // Initialize Store
 // ------------------------------------
 /* eslint-disable no-underscore-dangle */
-const initialState = window.___INITIAL_STATE__;
-const store = createStore(initialState);
+const store = createStore(window.___INITIAL_STATE__);
 
 // ------------------------------------
 // Initialize Render and mount app
@@ -17,10 +14,11 @@ const store = createStore(initialState);
 const MOUNT_NODE = document.getElementById('app');
 
 let render = () => {
+  const RootApp = require('./components/RootApp').default;
+  const routes = require('./routes/index').default(store);
+
   ReactDOM.render(
-    <Provider store={store}>
-      <RootApp />
-    </Provider>,
+    <RootApp store={store} routes={routes} />,
     MOUNT_NODE);
 };
 
@@ -50,7 +48,7 @@ if (process.env.NODE_ENV === 'development') {
 
       // Setup hot module replacement
       module.hot.accept([
-        './components/RootApp'
+        './routes/index'
       ], () =>
         setImmediate(() => {
           ReactDOM.unmountComponentAtNode(MOUNT_NODE);

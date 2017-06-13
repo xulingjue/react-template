@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 import Home from '../components/Home';
-import { increase, MODULE as homeReducerKey } from '../module/home';
+import { increase } from '../modules/home';
 
 /* eslint-disable no-unused-vars */
 const mapStateToProps = state => ({
-  ...state[homeReducerKey]
+  ...state.home
 });
 
 const mapDispatchToProps = {

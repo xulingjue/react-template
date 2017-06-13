@@ -1,5 +1,11 @@
-import asyncComponent from 'src/utils/asyncComponent';
+export default () => ({
+  path: '*',
 
-export default asyncComponent({
-  resolve: () => import('./components/NotFound')
+  getComponent(nextState, cb) {
+    require.ensure([], (require) => {
+      const NotFound = require('./components/NotFound').default;
+
+      cb(null, NotFound);
+    }, 'notfound');
+  }
 });

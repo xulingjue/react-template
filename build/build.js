@@ -6,13 +6,13 @@ const webpack = require('webpack');
 const config = require('../config/environments')['production'];
 const webpackConfig = require('../config/webpack/webpack.prod.conf');
 
-const spinner = ora('building for production...');
-spinner.start();
+// const spinner = ora('building for production...');
+// spinner.start();
 
 rm(path.join(config.outputPath), err => {
   if (err) throw err;
   webpack(webpackConfig, function (err, stats) {
-    spinner.stop();
+    // spinner.stop();
     if (err) throw err;
     process.stdout.write(stats.toString({
         colors: true,

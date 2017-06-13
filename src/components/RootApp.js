@@ -1,15 +1,24 @@
 import React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import AsyncHome from '../routes/Home';
-import AsyncNotFound from '../routes/NotFound';
+import PropTypes from 'prop-types';
+import { browserHistory, Router } from 'react-router';
+import { Provider } from 'react-redux';
 
-export default () => {
-  return (
-    <BrowserRouter>
-      <Switch>
-        <Route path="/" exact component={AsyncHome} />
-        <Route component={AsyncNotFound} />
-      </Switch>
-    </BrowserRouter>
-  );
-};
+export default class RootApp extends React.Component {
+  static propTypes = {
+    store: PropTypes.object.isRequired,
+    routes: PropTypes.object.isRequired
+  };
+
+  shouldComponentUpdate() {
+    return false;
+  }
+
+  render() {
+    const { store, routes } = this.props;
+    return (
+      <Provider store={store}>
+        <Router history={browserHistory} routes={routes} />
+      </Provider>
+    );
+  }
+}

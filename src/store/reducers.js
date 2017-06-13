@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
-import homeReducer, { MODULE as homeReducerKey } from 'src/routes/Home/module/home';
+import appReducer from './app';
 
 const makeRootReducer = (asyncReducers) => {
   return combineReducers({
     ...asyncReducers,
-    [homeReducerKey]: homeReducer
+    app: appReducer
   });
 };
 
