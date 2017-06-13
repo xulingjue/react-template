@@ -1,5 +1,3 @@
-require('./check-versions')();
-
 const ora = require('ora');
 const rm = require('rimraf');
 const path = require('path');

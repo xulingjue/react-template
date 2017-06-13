@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { AppContainer } from 'react-hot-loader';
 import createStore from './store/createStore';
 import RootApp from './components/RootApp';
 
@@ -17,17 +16,13 @@ const store = createStore(initialState);
 // ------------------------------------
 const MOUNT_NODE = document.getElementById('app');
 
-const render = (Component) => {
+let render = () => {
   ReactDOM.render(
-    <AppContainer>
-      <Provider store={store}>
-        <Component />
-      </Provider>
-    </AppContainer>,
+    <Provider store={store}>
+      <RootApp />
+    </Provider>,
     MOUNT_NODE);
 };
-
-render(RootApp);
 
 // ------------------------------------
 // Initialize Developer Tools
@@ -37,8 +32,33 @@ render(RootApp);
 if (process.env.NODE_ENV === 'development') {
   // Hot module replacement
   if (module.hot) {
-    module.hot.accept('./components/RootApp', () => {
-      render(RootApp);
-    });
+    if (module.hot) {
+      const renderApp = render;
+      const renderError = (error) => {
+        const RedBox = require('redbox-react').default;
+
+        ReactDOM.render(<RedBox error={error} />, MOUNT_NODE);
+      };
+
+      render = () => {
+        try {
+          renderApp();
+        } catch (e) {
+          renderError(e);
+        }
+      };
+
+      // Setup hot module replacement
+      module.hot.accept([
+        './components/RootApp'
+      ], () =>
+        setImmediate(() => {
+          ReactDOM.unmountComponentAtNode(MOUNT_NODE);
+          render();
+        })
+      );
+    }
   }
 }
+
+render();

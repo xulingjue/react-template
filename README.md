@@ -8,7 +8,7 @@
 
 ## Installation
 ```bash
-$ git clone http://192.168.0.5/gist/react-template.git <my-project-name> 
+$ git clone https://github.com/gcfeng/react-template.git <my-project-name> 
 $ cd <my-project-name>
 ```
 
