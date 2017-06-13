@@ -17,8 +17,6 @@ function resolve (dir) {
 Object.keys(baseWebpackConfig.entry).forEach(function (name) {
   baseWebpackConfig.entry[name] = [
     'eventsource-polyfill',
-    'react-hot-loader/patch',
-    // activate HMR for React
     'webpack-hot-middleware/client?reload=true',
     // bundle the client for webpack-dev-server
     // and connect to the provided endpoint
@@ -36,8 +34,8 @@ module.exports = merge(baseWebpackConfig, {
     })
   },
   // cheap-module-eval-source-map is faster for development
-  // devtool: '#cheap-module-eval-source-map',
-  devtool: 'inline-source-map',
+  devtool: '#cheap-module-eval-source-map',
+  // devtool: 'inline-source-map',
   plugins: [
     new webpack.DefinePlugin({
       'process.env': config.envVariables
