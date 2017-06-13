@@ -2,9 +2,12 @@
 
 > A template with react + redux + react-router4 + webpack2
 
-## Requirements
-- node `^4.5.0`
-- npm `^3.0.0` or yarn `^0.23.0`
+## Branches
+We also have different branches that has vary combinations.
+
+| Branch      | Description                   |
+|-------------|-------------------------------|
+| router3     | use react-router3             |
 
 ## Installation
 ```bash
