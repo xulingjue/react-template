@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const cheerio = require('cheerio');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const baseWebpackConfig = require('./webpack.base.conf');
@@ -46,19 +45,9 @@ module.exports = merge(baseWebpackConfig, {
     // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      templateContent: templateContent(),
+      template: resolve('src/index.html'),
       inject: true
     }),
     new FriendlyErrorsPlugin()
   ]
 });
-
-function templateContent() {
-  const html = fs.readFileSync(resolve('src/index.html')).toString();
-
-  const $ = cheerio.load(html);
-  $('title').text('React Template');
-  $('head').append(`<script src='/polyfill.js'></script>`);
-
-  return $.html();
-}

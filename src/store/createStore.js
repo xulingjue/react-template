@@ -1,10 +1,18 @@
 import { applyMiddleware, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
+import { createLogger } from 'redux-logger';
 import makeRootReducer from './reducers';
 
 export default (initialState = {}) => {
   /* configure middlewares */
-  const middleware = [thunk];
+  const logger = createLogger({
+    collapsed: true
+  });
+  const middleware = [
+    thunk,
+    /* logger must be the last middleware */
+    logger
+  ];
 
   /* enhance store */
   const enhancers = [];

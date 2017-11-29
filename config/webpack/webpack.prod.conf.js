@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const cheerio = require('cheerio');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -55,7 +54,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      templateContent: templateContent(),
+      template: resolve('src/index.html'),
       inject: true,
       minify: {
         removeComments: true,
@@ -104,16 +103,6 @@ const webpackConfig = merge(baseWebpackConfig, {
 if (config.bundleAnalyzerReport) {
   const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
   webpackConfig.plugins.push(new BundleAnalyzerPlugin());
-}
-
-function templateContent() {
-  const html = fs.readFileSync(resolve('src/index.html')).toString();
-
-  const $ = cheerio.load(html);
-  $('title').text('React Template');
-  $('head').append(`<script src='/polyfill.min.js'></script>`);
-
-  return $.html();
 }
 
 module.exports = webpackConfig;
