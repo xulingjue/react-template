@@ -26,7 +26,7 @@ export default class Home extends Component {
           <li><a href="https://facebook.github.io/react/">React</a></li>
           <li><a href="https://github.com/ReactTraining/react-router">React Router4</a></li>
           <li><a href="https://github.com/reactjs/redux">redux</a></li>
-          <li><a href="https://webpack.js.org/">Webpack2</a></li>
+          <li><a href="https://webpack.js.org/">Webpack</a></li>
         </ul>
         <p>Count: {this.props.count}</p>
         <button onClick={this.props.increase.bind(this)} className={styles.button}>add</button>

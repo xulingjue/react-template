@@ -1,6 +1,6 @@
 # React Template
 
-> A template with react + redux + react-router4 + webpack2
+> A template with react + redux + react-router4 + webpack
 
 ## Branches
 We also have different branches that has vary combinations.
