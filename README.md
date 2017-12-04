@@ -68,7 +68,8 @@ export default model({
 
   // state of the module
   state: {
-    count: 0
+    count: 0,
+    loading: false
   },
 
   // side effects, just like actions
@@ -80,6 +81,13 @@ export default model({
   effects: {
     increase ({ put }) {
       put({ type: 'actionName', payload: '' });
+    },
+    
+    increaseAsync ({ update }) {
+      update({ loading: true });
+      someApi().then(() => {}).catch(() => {}).then(() => {
+        update({ loading: false });
+      });
     }    
   },
 
