@@ -29,8 +29,15 @@ export default class Home extends Component {
           <li><a href="https://webpack.js.org/">Webpack</a></li>
         </ul>
         <p>Count: {this.props.count}</p>
-        <button onClick={this.props.increase.bind(this)} className={styles.button}>add</button>
+        <button onClick={() => this.props.increase()} className={styles.button}>plus</button>
+        <button onClick={() => this.props.decrease()} className={styles.button}>minus</button>
       </div>
     );
+  }
+
+  increaseAsync () {
+    this.props.increaseAsync().then(() => {
+      console.log('so');
+    });
   }
 }

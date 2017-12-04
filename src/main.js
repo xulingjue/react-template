@@ -1,13 +1,13 @@
 import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import createStore from './store/createStore';
+import { store } from './store/store';
 
 // ------------------------------------
 // Initialize Store
 // ------------------------------------
 /* eslint-disable no-underscore-dangle */
-const store = createStore(window.___INITIAL_STATE__);
+// const store = createStore(window.___INITIAL_STATE__);
 
 // ------------------------------------
 // Initialize Render and mount app

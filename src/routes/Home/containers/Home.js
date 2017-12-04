@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import Home from '../components/Home';
-import { increase } from '../modules/home';
+import model from '../models/home';
 
 /* eslint-disable no-unused-vars */
 const mapStateToProps = state => ({
@@ -8,7 +8,10 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
-  increase
+  // increase
+  increase: model.effects.increase,
+  increaseAsync: model.effects.increaseAsync,
+  decrease: model.effects.decrease
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

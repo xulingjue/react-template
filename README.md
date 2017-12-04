@@ -34,3 +34,60 @@ All available commands:
 | `start` | start dev server, default listen to 8080, support HRM |
 | `start:prod` | start dev server serve files after build |
 | `build:prod` | build project and output to `dist/` |
+
+## Project structure
+```
+|- build                          # webpack build script
+|- config                         # project config
+|- server                         # development server
+|- src
+    |- components                 # components
+    |- layouts                    # page layouts
+    |- routes                     # pages
+        |- components
+        |- containers
+        |- models
+        |- index.js
+    |- services                   # handle module service logic
+    |- static                     # static files
+    |- assets                     # global assets, such as images
+    |- store                      # redux store
+    |- index.html
+    |- main.js                    # entry
+```
+
+The redux boilerplate is very boring. To implement a feature, we have to define actions, reducers and constants. For 
+convenience, we wrap this into model. A model is just like:
+
+```js
+import { model } from 'src/store/store';
+
+export default model({
+  // namespace is required and need to be unique
+  namespace: 'home',
+
+  // state of the module
+  state: {
+    count: 0
+  },
+
+  // side effects, just like actions
+  // ease effects will be injected below methods:
+  // - dispatch(action): dispatch an action, the field type corresponds to reducers
+  // - put(action): same to dispatch
+  // - update(state): update state directly
+  // - getState(): get global state 
+  effects: {
+    increase ({ put }) {
+      put({ type: 'actionName', payload: '' });
+    }    
+  },
+
+  // reducers
+  reducers: {
+    actionName (state, action) {
+      return {...state, state};
+    }
+  }
+});
+```
