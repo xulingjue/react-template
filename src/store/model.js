@@ -17,6 +17,8 @@ export default (store) => {
       effects: getEffects(store, model)
     };
 
+    models.push(_model);
+
     injectReducer(store, { key: _model.namespace, reducer: _model.reducers });
 
     return _model;
