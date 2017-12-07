@@ -74,8 +74,8 @@ export default model({
 
   // side effects, just like actions
   // ease effects will be injected below methods:
-  // - dispatch(action): dispatch an action, the field type corresponds to reducers
-  // - put(action): same to dispatch
+  // - put(action): dispatch an action, the action type corresponds to reducers
+  // - dispatch(action): dispatch an action, the action type must prefixed with namespace, such as 'namespace/actionName'
   // - update(state): update state directly
   // - getState(): get global state 
   effects: {
