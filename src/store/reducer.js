@@ -22,7 +22,7 @@ export function getReducer (model = {}) {
       if (handler) {
         return handler(state, action);
       } else {
-        return action && action.type === '@@update' ? action.state : state;
+        return action && action.type === prefixed(namespace, '@@update') ? action.state : state;
       }
     });
   } else {
@@ -31,7 +31,7 @@ export function getReducer (model = {}) {
       if (handler) {
         return handler(state, action);
       } else {
-        return action && action.type === '@@update' ? action.state : state;
+        return action && action.type === prefixed(namespace, '@@update') ? action.state : state;
       }
     };
   }

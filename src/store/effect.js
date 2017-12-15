@@ -31,7 +31,7 @@ export function getEffects (store, model = {}) {
           currentState = Object.assign({}, currentState, state);
 
           store.dispatch({
-            type: '@@update',
+            type: prefixed(model.namespace, '@@update'),
             state: currentState
           });
         }
