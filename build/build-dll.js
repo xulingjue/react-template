@@ -1,6 +1,7 @@
 const shell = require('shelljs');
 const path = require('path');
 const fs = require('fs');
+const chalk = require('chalk');
 
 const pkg = require(path.join(__dirname, '..', 'package.json'));
 const dllConfig = require('../config/webpack/dll');
@@ -31,31 +32,26 @@ if (!fs.existsSync(dllManifestPath)) {
 
 const existDepsJson = fs.existsSync(dllManifestDepsPath);
 const existDll = fs.existsSync(dllManifestPath);
-const pkgDeps = pkg.dependencies || {};
+
+const buildDeps = getBuildDeps();
 
 if (!existDepsJson || !existDll) {
-  run(pkgDeps);
+  run(buildDeps);
 } else if (existDepsJson) {
-  let isChanged = false;
   let depsJson = fs.readFileSync(dllManifestDepsPath, 'utf8');
   try {
     depsJson = JSON.parse(depsJson);
   } catch (e) {
     depsJson = {};
   }
-  let deps = depsJson.dependencies || {};
 
-  if (depsJson.env !== buildEnv || !Object.keys(deps)) {
-    isChanged = true;
-  } else {
-    Object.keys(deps).every(depName => {
-      const depVersion = deps[depName];
-      isChanged = !pkgDeps[depName] || depVersion !== pkgDeps[depName];
-      return !isChanged;
-    });
-  }
+  let currentDeps = depsJson.dependencies || {};
+
+  isChanged = depsJson.env !== buildEnv || isBuildDepsChange(buildDeps, currentDeps) ||
+    isPackageChange(currentDeps);
+
   if (isChanged) {
-    run(pkgDeps);
+    run(buildDeps);
   }
 }
 
@@ -77,4 +73,58 @@ function run (deps) {
   };
 
   fs.writeFileSync(dllManifestDepsPath, JSON.stringify(depsJson), 'utf8');
+}
+
+/**
+ * Get build dll dependencies
+ */
+function getBuildDeps () {
+  const deps = [];
+  const dependencies = pkg.dependencies || {};
+  const devDependencies = pkg.devDependencies || {};
+
+  Object.keys(dllConfig.dlls).forEach(dllName => {
+    const dllDeps = dllConfig.dlls[dllName] || [];
+    dllDeps.forEach(depName => {
+      if (deps.indexOf(depName) < 0) {
+        const dep = {};
+        dep[depName] = dependencies[depName] || devDependencies[depName];
+
+        if (!dep[depName]) {
+          console.log(chalk.red(`package.json can not find ${depName}`));
+          process.exit(1);
+        }
+
+        deps.push(dep);
+      }
+    });
+  });
+  return deps;
+}
+
+/**
+ * Added or removed build dll dependencies
+ */
+function isBuildDepsChange (buildDeps = {}, currentDeps = {}) {
+  let isChanged = false;
+  Object.keys(buildDeps).every(depName => {
+    isChanged = !currentDeps[depName];
+    return !isChanged;
+  });
+  return isChanged;
+}
+
+/**
+ * Changed dependency version
+ */
+function isPackageChange (currentDeps = {}) {
+  let isChanged = false;
+  const dependencies = pkg.dependencies || {};
+
+  Object.keys(currentDeps).every(depName => {
+    isChanged = !dependencies[depName] || dependencies[depName] !== currentDeps[depName];
+    return !isChanged;
+  });
+
+  return isChanged;
 }
