@@ -7,7 +7,7 @@ const setup = require('./middlewares/frontendMiddleware');
 const config = require('../config/environments')[process.env.NODE_ENV || 'development'];
 
 // default port where dev server listens for incoming traffic
-const port = process.env.PORT || config.port || 8080;
+const port = process.env.PORT || config.port || 9999;
 // automatically open browser, if not set will be false
 const autoOpenBrowser = !!config.autoOpenBrowser;
 // Define HTTP proxies to your custom API backend

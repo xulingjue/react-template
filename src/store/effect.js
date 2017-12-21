@@ -14,7 +14,7 @@ export function getEffects (store, model = {}) {
     return (...args) => {
       return (dispatch, getState) => {
         args = args || [];
-        args.push({ put, dispatch, getState, update });
+        args.unshift({ put, dispatch, getState, update });
         return handler.apply(null, args);
 
         // dispatch an action

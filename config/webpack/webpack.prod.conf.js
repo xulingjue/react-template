@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const cheerio = require('cheerio');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -9,6 +10,7 @@ const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const loaders = require('./loaders');
 const config = require('../environments')['production'];
 const baseWebpackConfig = require('./webpack.base.conf');
+const dllConfig = require('./dll');
 
 function resolve (dir) {
   return path.resolve(__dirname, '../../', dir);
@@ -54,7 +56,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: resolve('src/index.html'),
+      templateContent: templateContent(),
       inject: true,
       minify: {
         removeComments: true,
@@ -67,25 +69,25 @@ const webpackConfig = merge(baseWebpackConfig, {
       chunksSortMode: 'dependency'
     }),
     // split vendor js into its own file
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: function (module, count) {
-        // any required modules inside node_modules are extracted to vendor
-        return (
-          module.resource &&
-          /\.js$/.test(module.resource) &&
-          module.resource.indexOf(
-            resolve('node_modules')
-          ) === 0
-        )
-      }
-    }),
+    // new webpack.optimize.CommonsChunkPlugin({
+    //   name: 'vendor',
+    //   minChunks: function (module, count) {
+    //     // any required modules inside node_modules are extracted to vendor
+    //     return (
+    //       module.resource &&
+    //       /\.js$/.test(module.resource) &&
+    //       module.resource.indexOf(
+    //         resolve('node_modules')
+    //       ) === 0
+    //     )
+    //   }
+    // }),
     // extract webpack runtime and module manifest to its own file in order to
     // prevent vendor hash from being updated whenever app bundle is updated
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'manifest',
-      chunks: ['vendor']
-    }),
+    // new webpack.optimize.CommonsChunkPlugin({
+    //   name: 'manifest',
+    //   chunks: ['vendor']
+    // }),
     // copy custom static assets
     new CopyWebpackPlugin([
       {
@@ -95,10 +97,23 @@ const webpackConfig = merge(baseWebpackConfig, {
       },
       {
         from: resolve('node_modules/babel-polyfill/dist/polyfill.min.js')
+      },
+      {
+        context: dllConfig.path,
+        from: '*.dll.js',
       }
     ])
   ]
 });
+
+// DLL reference
+webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls).map(dllName => {
+  return (
+    new webpack.DllReferencePlugin({
+      manifest: require(path.join(resolve(dllConfig.path), dllName + '.json'))
+    })
+  );
+}));
 
 if (config.bundleAnalyzerReport) {
   const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -106,3 +121,15 @@ if (config.bundleAnalyzerReport) {
 }
 
 module.exports = webpackConfig;
+
+function templateContent () {
+  const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
+  const $ = cheerio.load(html);
+
+  Object.keys(dllConfig.dlls).forEach(dllName => {
+    $('body').append(`<script data-dll='true' src='/${dllName}.dll.js'></script>`);
+  });
+
+  return $.html();
+}
+

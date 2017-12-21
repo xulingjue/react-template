@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const cheerio = require('cheerio');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const baseWebpackConfig = require('./webpack.base.conf');
@@ -7,6 +8,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const loaders = require('./loaders');
 const config = require('../environments')['development'];
+const dllConfig = require('./dll');
 
 function resolve (dir) {
   return path.resolve(__dirname, '../../', dir);
@@ -25,7 +27,7 @@ Object.keys(baseWebpackConfig.entry).forEach(function (name) {
   ].concat(baseWebpackConfig.entry[name]);
 });
 
-module.exports = merge(baseWebpackConfig, {
+const webpackConfig = merge(baseWebpackConfig, {
   module: {
     rules: loaders.styleLoaders({
       sourceMap: config.cssSourceMap,
@@ -45,9 +47,34 @@ module.exports = merge(baseWebpackConfig, {
     // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: resolve('src/index.html'),
+      templateContent: templateContent(),
       inject: true
     }),
+    new webpack.WatchIgnorePlugin([
+      /node_modules/
+    ]),
     new FriendlyErrorsPlugin()
   ]
 });
+
+// add dlls manifest
+webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls).map(dllName => {
+  return (
+    new webpack.DllReferencePlugin({
+      manifest: require(path.join(resolve(dllConfig.path), dllName + '.json'))
+    })
+  );
+}));
+
+module.exports = webpackConfig;
+
+function templateContent () {
+  const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
+  const $ = cheerio.load(html);
+
+  Object.keys(dllConfig.dlls).forEach(dllName => {
+    $('body').append(`<script data-dll='true' src='/${dllName}.dll.js'></script>`);
+  });
+
+  return $.html();
+}

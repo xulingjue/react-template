@@ -33,6 +33,8 @@ All available commands:
 |---------------------------------------|-------------|
 | `start` | start dev server, default listen to 8080, support HRM |
 | `start:prod` | start dev server serve files after build |
+| `build:dev:dll` | build development dll |
+| `build:prod:dll` | build production dll |
 | `build:prod` | build project and output to `dist/` |
 
 ## Project structure
@@ -56,7 +58,7 @@ All available commands:
     |- main.js                    # entry
 ```
 
-The redux boilerplate is very boring. To implement a feature, we have to define actions, reducers and constants. For 
+The redux boilerplate is very boring. To implement a feature, we have to define actions, reducers and constants. For
 convenience, we wrap this into model. A model is just like:
 
 ```js
@@ -73,22 +75,22 @@ export default model({
   },
 
   // side effects, just like actions
-  // ease effects will be injected below methods:
+  // each effect will be injected below methods:
   // - put(action): dispatch an action, the action type corresponds to reducers
   // - dispatch(action): dispatch an action, the action type must prefixed with namespace, such as 'namespace/actionName'
   // - update(state): update state directly
-  // - getState(): get global state 
+  // - getState(): get global state
   effects: {
     increase ({ put }) {
       put({ type: 'actionName', payload: '' });
     },
-    
+
     increaseAsync ({ update }) {
       update({ loading: true });
       someApi().then(() => {}).catch(() => {}).then(() => {
         update({ loading: false });
       });
-    }    
+    }
   },
 
   // reducers

@@ -1250,7 +1250,7 @@ chalk@^2.3.0:
     escape-string-regexp "^1.0.5"
     supports-color "^4.0.0"
 
-cheerio@^1.0.0-rc.1:
+cheerio@^1.0.0-rc.2:
   version "1.0.0-rc.2"
   resolved "http://registry.npm.taobao.org/cheerio/download/cheerio-1.0.0-rc.2.tgz#4b9f53a81b27e4d5dac31c0ffd0cfa03cc6830db"
   dependencies:

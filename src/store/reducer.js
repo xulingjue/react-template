@@ -40,7 +40,7 @@ export function getReducer (model = {}) {
 export function makeRootReducer (asyncReducers) {
   return combineReducers({
     ...asyncReducers,
-    app: (state = {}) => state
+    defaultState: (state = {}) => state
   });
 }
 
