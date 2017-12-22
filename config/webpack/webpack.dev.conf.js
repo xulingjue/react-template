@@ -5,6 +5,7 @@ const webpack = require('webpack');
 const merge = require('webpack-merge');
 const baseWebpackConfig = require('./webpack.base.conf');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const loaders = require('./loaders');
 const config = require('../environments')['development'];
@@ -65,16 +66,21 @@ webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls)
     })
   );
 }));
+webpackConfig.plugins.push(
+  new HtmlWebpackIncludeAssetsPlugin({
+    append: false,
+    assets: [{
+      path: '', glob: '*.dll.js', globPath: path.join(dllConfig.path, '/')
+    }]
+  })
+);
 
 module.exports = webpackConfig;
 
 function templateContent () {
   const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
   const $ = cheerio.load(html);
-
-  Object.keys(dllConfig.dlls).forEach(dllName => {
-    $('body').append(`<script data-dll='true' src='/${dllName}.dll.js'></script>`);
-  });
+  $('body').append(`<script src='/polyfill.js'></script>`);
 
   return $.html();
 }

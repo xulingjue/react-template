@@ -18,15 +18,15 @@ shell.mkdir('-p', outputPath);
 // Create a manifest so npm install doesn't warn us
 if (!fs.existsSync(dllManifestPath)) {
   fs.writeFileSync(
-      dllManifestPath,
-      JSON.stringify({
-          name: dllConfig.packageName,
-          private: true,
-          author: pkg.author,
-          repository: '',
-          version: pkg.version
-      }),
-      'utf8'
+    dllManifestPath,
+    JSON.stringify({
+      name: dllConfig.packageName,
+      private: true,
+      author: pkg.author,
+      repository: '',
+      version: pkg.version
+    }),
+    'utf8'
   );
 }
 
@@ -79,23 +79,17 @@ function run (deps) {
  * Get build dll dependencies
  */
 function getBuildDeps () {
-  const deps = [];
+  const deps = {};
   const dependencies = pkg.dependencies || {};
   const devDependencies = pkg.devDependencies || {};
 
   Object.keys(dllConfig.dlls).forEach(dllName => {
     const dllDeps = dllConfig.dlls[dllName] || [];
     dllDeps.forEach(depName => {
-      if (deps.indexOf(depName) < 0) {
-        const dep = {};
-        dep[depName] = dependencies[depName] || devDependencies[depName];
-
-        if (!dep[depName]) {
-          console.log(chalk.red(`package.json can not find ${depName}`));
-          process.exit(1);
-        }
-
-        deps.push(dep);
+      deps[depName] = dependencies[depName] || devDependencies[depName];
+      if (!deps[depName]) {
+        console.log(chalk.red(`package.json can not find ${depName}`));
+        process.exit(1);
       }
     });
   });

@@ -12,7 +12,20 @@ module.exports = {
   // The DLL manifest:
   // [fileName]: [deps]
   dlls: {
-    'lib': Object.keys(pkg.dependencies)
+    react: [
+      'react',
+      'react-dom',
+      'react-redux',
+      'react-router',
+      'redbox-react',
+      'redux',
+      'redux-logger',
+      'redux-thunk',
+      'prop-types'
+    ],
+    util: [
+      'invariant'
+    ]
   },
 
   // We will generate dlls to node_modules/${packageName}

@@ -5,6 +5,7 @@ const webpack = require('webpack');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const loaders = require('./loaders');
@@ -33,6 +34,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': config.envVariables
     }),
+    new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
@@ -114,6 +116,14 @@ webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls)
     })
   );
 }));
+webpackConfig.plugins.push(
+  new HtmlWebpackIncludeAssetsPlugin({
+    append: false,
+    assets: [{
+      path: '', glob: '*.dll.js', globPath: path.join(dllConfig.path, '/')
+    }]
+  })
+);
 
 if (config.bundleAnalyzerReport) {
   const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -125,10 +135,7 @@ module.exports = webpackConfig;
 function templateContent () {
   const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
   const $ = cheerio.load(html);
-
-  Object.keys(dllConfig.dlls).forEach(dllName => {
-    $('body').append(`<script data-dll='true' src='/${dllName}.dll.js'></script>`);
-  });
+  $('body').append(`<script src='/polyfill.min.js'></script>`);
 
   return $.html();
 }
