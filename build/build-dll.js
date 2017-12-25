@@ -2,6 +2,8 @@ const shell = require('shelljs');
 const path = require('path');
 const fs = require('fs');
 const chalk = require('chalk');
+const webpack = require('webpack');
+const webpackConfig = require('../config/webpack/webpack.dll.conf');
 
 const pkg = require(path.join(__dirname, '..', 'package.json'));
 const dllConfig = require('../config/webpack/dll');
@@ -9,8 +11,6 @@ const outputPath = dllConfig.path;
 const dllManifestPath = path.join(outputPath, 'package.json');
 const dllManifestDepsPath = path.join(outputPath, 'package-deps.json');
 const buildEnv = process.env.BUILD_ENV || 'production';
-
-console.log('Building dll...');
 
 // Make sure the directory
 shell.mkdir('-p', outputPath);
@@ -55,24 +55,30 @@ if (!existDepsJson || !existDll) {
   }
 }
 
-console.log('Build dll successfully.');
-
 /**
  * Run
  */
 function run (deps) {
-  if (buildEnv === 'production') {
-    shell.exec('cross-env NODE_ENV=production BUILD_ENV=production webpack --display-chunks --color --config config/webpack/webpack.dll.conf.js');
-  } else{
-    shell.exec('cross-env NODE_ENV=development BUILD_ENV=development webpack --display-chunks --color --config config/webpack/webpack.dll.conf.js');
-  }
+  console.log('Building dll...');
+  webpack(webpackConfig, function (err, stats) {
+    if (err) throw err;
+    process.stdout.write(stats.toString({
+      colors: true,
+      modules: false,
+      children: false,
+      chunks: false,
+      chunkModules: false
+    }) + '\n\n');
 
-  const depsJson = {
-    env: buildEnv,
-    dependencies: deps
-  };
+    const depsJson = {
+      env: buildEnv,
+      dependencies: deps
+    };
 
-  fs.writeFileSync(dllManifestDepsPath, JSON.stringify(depsJson), 'utf8');
+    fs.writeFileSync(dllManifestDepsPath, JSON.stringify(depsJson), 'utf8');
+
+    console.log(chalk.cyan('Build dll complete.'));
+  });
 }
 
 /**

@@ -8,6 +8,8 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const chalk = require('chalk');
 const pkg = require(path.join(__dirname, '..', '..', 'package.json'));
 const dllConfig = require('./dll');
 const envs = require('../environments');
@@ -26,6 +28,11 @@ const webpackConfig = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env': config.envVariables
+    }),
+
+    new ProgressBarPlugin({
+      format: ' building dll [:bar]' + chalk.green.bold(':percent') + ' :msg :elapsed',
+      clear: false
     }),
 
     new webpack.DllPlugin({
