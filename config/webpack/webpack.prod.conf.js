@@ -36,9 +36,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     }),
     new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
+      parallel: true,
+      compress: false,
       sourceMap: false
     }),
     // extract css into its own file

@@ -43,11 +43,10 @@ const webpackConfig = {
 };
 
 if (buildEnv === 'production') {
+  webpackConfig.output.filename = '[name].[chunkhash].dll.js'
   webpackConfig.plugins.push(
     new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
+      compress: false,
       sourceMap: false
     })
   );
