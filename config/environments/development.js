@@ -3,7 +3,7 @@ module.exports = {
     NODE_ENV: '"development"',
     BUILD_ENV: '"development"'
   },
-  port: 9999,
+  port: 9990,
   autoOpenBrowser: false,
   // https://github.com/chimurai/http-proxy-middleware
   proxyTable: {},

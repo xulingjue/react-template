@@ -1,16 +1,12 @@
-import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import createStore from './store/createStore';
+import { store } from './store';
 import RootApp from './components/RootApp';
 
 // ------------------------------------
 // Initialize Store
 // ------------------------------------
-/* eslint-disable no-underscore-dangle */
-const initialState = window.___INITIAL_STATE__;
-const store = createStore(initialState);
 
 // ------------------------------------
 // Initialize Render and mount app

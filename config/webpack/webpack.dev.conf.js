@@ -1,12 +1,14 @@
 const fs = require('fs');
 const path = require('path');
+const cheerio = require('cheerio');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const baseWebpackConfig = require('./webpack.base.conf');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
-const loaders = require('./loaders');
 const config = require('../environments')['development'];
+const dllConfig = require('./dll');
 
 function resolve (dir) {
   return path.resolve(__dirname, '../../', dir);
@@ -25,12 +27,33 @@ Object.keys(baseWebpackConfig.entry).forEach(function (name) {
   ].concat(baseWebpackConfig.entry[name]);
 });
 
-module.exports = merge(baseWebpackConfig, {
+const webpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: loaders.styleLoaders({
-      sourceMap: config.cssSourceMap,
-      cssModules: config.cssModules
-    })
+    rules: [{
+      test: /\.css$/,
+      use: ['style-loader', 'css-loader']
+    }, {
+      test: /_nm\.less$/,
+      use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader']
+    }, {
+      test: /^((?!(_nm)).)*\.less$/,
+      use: [
+        'style-loader',
+        path.resolve(__dirname, 'css-module-content'),
+        {
+          loader: 'css-loader',
+          options: {
+            modules: true,
+            localIdentName: '[name]__[local]--[hash:base64:5]',
+            importLoaders: 3,
+            camelCase: true
+          }
+        },
+        path.resolve(__dirname, 'css-module-fix'),
+        'postcss-loader',
+        'less-loader'
+      ]
+    }]
   },
   // cheap-module-eval-source-map is faster for development
   devtool: '#cheap-module-eval-source-map',
@@ -45,9 +68,41 @@ module.exports = merge(baseWebpackConfig, {
     // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: resolve('src/index.html'),
+      templateContent: templateContent(),
       inject: true
     }),
+    new webpack.WatchIgnorePlugin([
+      /node_modules/
+    ]),
     new FriendlyErrorsPlugin()
   ]
 });
+
+// add dlls manifest
+webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls).map(dllName => {
+  return (
+    new webpack.DllReferencePlugin({
+      manifest: require(path.join(resolve(dllConfig.path), dllName + '.json'))
+    })
+  );
+}));
+
+webpackConfig.plugins.push(
+  new HtmlWebpackIncludeAssetsPlugin({
+    append: false,
+    assets: [{
+      path: '', glob: '*.dll.js', globPath: path.join(dllConfig.path, '/')
+    }]
+  })
+);
+
+module.exports = webpackConfig;
+
+function templateContent() {
+  const html = fs.readFileSync(resolve('src/index.html')).toString();
+
+  const $ = cheerio.load(html);
+  $('body').append(`<script src='/polyfill.js'></script>`);
+
+  return $.html();
+}

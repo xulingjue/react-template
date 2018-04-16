@@ -7,13 +7,16 @@
     "npm": "^3.0.0"
   },
   "scripts": {
-    "start": "cross-env NODE_ENV=development node server/index.js",
+    "start": "yarn build:dev:dll && cross-env NODE_ENV=development node server/index.js",
     "start:prod": "cross-env NODE_ENV=production BUILD_ENV=production node server/index.js",
-    "build:prod": "cross-env NODE_ENV=production BUILD_ENV=production node build/build.js"
+    "build:dev:dll": "cross-env NODE_ENV=development BUILD_ENV=development node build/build-dll.js",
+    "build:prod:dll": "cross-env NODE_ENV=production BUILD_ENV=production node build/build-dll.js",
+    "build:prod": "yarn build:prod:dll && cross-env NODE_ENV=production BUILD_ENV=production node build/build.js"
   },
   "license": "MIT",
   "dependencies": {
     "babel-polyfill": "^6.23.0",
+    "nmodel": "^1.0.0",
     "prop-types": "^15.5.10",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
@@ -61,6 +64,7 @@
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^0.11.1",
     "friendly-errors-webpack-plugin": "^1.6.1",
+    "html-webpack-include-assets-plugin": "^1.0.4",
     "html-webpack-plugin": "^2.28.0",
     "http-proxy-middleware": "^0.17.4",
     "less": "^2.7.2",

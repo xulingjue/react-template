@@ -25,11 +25,12 @@ export default class Home extends Component {
         <ul className={styles.list}>
           <li><a href="https://facebook.github.io/react/">React</a></li>
           <li><a href="https://github.com/ReactTraining/react-router">React Router4</a></li>
-          <li><a href="https://github.com/reactjs/redux">redux</a></li>
+          <li><a href="https://www.npmjs.com/package/nmodel">NModel</a></li>
           <li><a href="https://webpack.js.org/">Webpack</a></li>
         </ul>
         <p>Count: {this.props.count}</p>
         <button onClick={this.props.increase.bind(this)} className={styles.button}>add</button>
+        <button onClick={() => this.props.decrease()} className={styles.button}>minus</button>
       </div>
     );
   }

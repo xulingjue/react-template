@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const compression = require('compression');
+const dllConfig = require('../../config/webpack/dll');
 
 function resolve (dir) {
   return path.join(__dirname, '../../', dir);
@@ -34,6 +35,11 @@ const addDevMiddlewares = (app, webpackConfig, next) => {
   app.get(/polyfill\.js/, (req, res) => {
     const filename = req.path.replace(/^\//, '');
     res.sendFile(path.resolve(__dirname, '../../node_modules/babel-polyfill/dist', filename));
+  });
+
+  app.get(/\.dll\.js$/, (req, res) => {
+    const filename = req.path.replace(/^\//, '');
+    res.sendFile(path.join(dllConfig.path, filename));
   });
 
   app.use('/', express.static(resolve('src/static')));

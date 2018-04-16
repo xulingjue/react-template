@@ -1,26 +1,24 @@
-const ora = require('ora');
 const rm = require('rimraf');
 const path = require('path');
 const chalk = require('chalk');
 const webpack = require('webpack');
-const config = require('../config/environments')['production'];
 const webpackConfig = require('../config/webpack/webpack.prod.conf');
-
-const spinner = ora('building for production...');
-spinner.start();
+const envs = require('../config/environments');
+const buildEnv = process.env.BUILD_ENV || 'production';
+const config = envs[buildEnv] || envs['production'];
 
 rm(path.join(config.outputPath), err => {
   if (err) throw err;
   webpack(webpackConfig, function (err, stats) {
-    spinner.stop();
+    // spinner.stop();
     if (err) throw err;
     process.stdout.write(stats.toString({
-        colors: true,
-        modules: false,
-        children: false,
-        chunks: false,
-        chunkModules: false
-      }) + '\n\n');
+      colors: true,
+      modules: false,
+      children: false,
+      chunks: false,
+      chunkModules: false
+    }) + '\n\n');
 
     console.log(chalk.cyan('  Build complete.\n'));
     console.log(chalk.yellow(

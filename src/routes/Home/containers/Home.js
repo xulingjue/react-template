@@ -1,14 +1,14 @@
 import { connect } from 'react-redux';
 import Home from '../components/Home';
-import { increase, MODULE as homeReducerKey } from '../module/home';
+import model from '../models/home';
 
 /* eslint-disable no-unused-vars */
 const mapStateToProps = state => ({
-  ...state[homeReducerKey]
+  ...state[model.namespace]
 });
 
 const mapDispatchToProps = {
-  increase
+  ...model.effects
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

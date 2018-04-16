@@ -40,4 +40,28 @@ All available commands:
 |---------------------------------------|-------------|
 | `start` | start dev server, default listen to 8080, support HRM |
 | `start:prod` | start dev server serve files after build |
+| `build:dev:dll` | build development dll |
+| `build:prod:dll` | build production dll |
 | `build:prod` | build project and output to `dist/` |
+
+## Project structure
+```
+|- build                          # webpack build script
+|- config                         # project config
+|- server                         # development server
+|- src
+    |- components                 # components
+    |- layouts                    # page layouts
+    |- routes                     # pages
+        |- pageA
+          |- components
+          |- containers           # container components
+          |- models               # redux model
+          |- index.js
+    |- services                   # handle module service logic
+    |- static                     # static files
+    |- assets                     # global assets, such as images
+    |- store                      # redux store
+    |- index.html
+    |- main.js                    # entry
+```
