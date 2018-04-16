@@ -10,7 +10,6 @@ const path = require('path');
 const webpack = require('webpack');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const chalk = require('chalk');
-const pkg = require(path.join(__dirname, '..', '..', 'package.json'));
 const dllConfig = require('./dll');
 const envs = require('../environments');
 const buildEnv = process.env.BUILD_ENV || 'production';
@@ -42,10 +41,11 @@ const webpackConfig = {
   ]
 };
 
-if (buildEnv === 'production') {
-  webpackConfig.output.filename = '[name].[chunkhash].dll.js'
+if (buildEnv.indexOf('development') < 0) {
+  webpackConfig.output.filename = '[name].[chunkhash].dll.js';
   webpackConfig.plugins.push(
     new webpack.optimize.UglifyJsPlugin({
+      parallel: true,
       compress: false,
       sourceMap: false
     })

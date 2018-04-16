@@ -3,10 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const chalk = require('chalk');
 const webpack = require('webpack');
-const webpackConfig = require('../config/webpack/webpack.dll.conf');
+const rm = require('rimraf');
 
 const pkg = require(path.join(__dirname, '..', 'package.json'));
 const dllConfig = require('../config/webpack/dll');
+const webpackConfig = require('../config/webpack/webpack.dll.conf');
 const outputPath = dllConfig.path;
 const dllManifestPath = path.join(outputPath, 'package.json');
 const dllManifestDepsPath = path.join(outputPath, 'package-deps.json');
@@ -45,9 +46,11 @@ if (!existDepsJson || !existDll) {
     depsJson = {};
   }
 
+  let currentDlls = depsJson.dlls || {};
   let currentDeps = depsJson.dependencies || {};
 
-  isChanged = depsJson.env !== buildEnv || isBuildDepsChange(buildDeps, currentDeps) ||
+  isChanged = depsJson.env !== buildEnv || isBuildKeysChange(dllConfig.dlls, currentDlls) ||
+    isBuildDepsChange(buildDeps, currentDeps) ||
     isPackageChange(currentDeps);
 
   if (isChanged) {
@@ -60,24 +63,28 @@ if (!existDepsJson || !existDll) {
  */
 function run (deps) {
   console.log('Building dll...');
-  webpack(webpackConfig, function (err, stats) {
+  rm(path.join(outputPath), err => {
     if (err) throw err;
-    process.stdout.write(stats.toString({
-      colors: true,
-      modules: false,
-      children: false,
-      chunks: false,
-      chunkModules: false
-    }) + '\n\n');
+    webpack(webpackConfig, function (err, stats) {
+      if (err) throw err;
+      process.stdout.write(stats.toString({
+        colors: true,
+        modules: false,
+        children: false,
+        chunks: false,
+        chunkModules: false
+      }) + '\n\n');
 
-    const depsJson = {
-      env: buildEnv,
-      dependencies: deps
-    };
+      console.log(chalk.cyan('Build dll complete.\n'));
 
-    fs.writeFileSync(dllManifestDepsPath, JSON.stringify(depsJson), 'utf8');
+      const depsJson = {
+        env: buildEnv,
+        dlls: dllConfig.dlls,
+        dependencies: deps
+      };
 
-    console.log(chalk.cyan('Build dll complete.'));
+      fs.writeFileSync(dllManifestDepsPath, JSON.stringify(depsJson), 'utf8');
+    });
   });
 }
 
@@ -92,7 +99,12 @@ function getBuildDeps () {
   Object.keys(dllConfig.dlls).forEach(dllName => {
     const dllDeps = dllConfig.dlls[dllName] || [];
     dllDeps.forEach(depName => {
-      deps[depName] = dependencies[depName] || devDependencies[depName];
+      if (depName.indexOf('/') >= 0) {
+        const name = depName.split('/')[0];
+        deps[depName] = dependencies[name] || devDependencies[name];
+      } else {
+        deps[depName] = dependencies[depName] || devDependencies[depName];
+      }
       if (!deps[depName]) {
         console.log(chalk.red(`package.json can not find ${depName}`));
         process.exit(1);
@@ -100,6 +112,22 @@ function getBuildDeps () {
     });
   });
   return deps;
+}
+
+/**
+ * Change the keys
+ */
+function isBuildKeysChange (dlls = {}, currentDlls = {}) {
+  if (Object.keys(dlls).length !== Object.keys(currentDlls).length) return true;
+  let isChange = false;
+  Object.keys(dlls).every(key => {
+    if (!currentDlls[key]) {
+      isChange = true;
+      return false;
+    }
+    return true;
+  });
+  return isChange;
 }
 
 /**

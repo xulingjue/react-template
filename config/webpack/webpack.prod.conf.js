@@ -8,9 +8,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
-const loaders = require('./loaders');
-const config = require('../environments')['production'];
 const baseWebpackConfig = require('./webpack.base.conf');
+const envs = require('../environments');
+const buildEnv = process.env.BUILD_ENV || 'production';
+const config = envs[buildEnv] || envs['production'];
 const dllConfig = require('./dll');
 
 function resolve (dir) {
@@ -19,27 +20,50 @@ function resolve (dir) {
 
 const webpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: loaders.styleLoaders({
-      sourceMap: false,
-      cssModules: config.cssModules,
-      extract: true
-    })
+    rules: [{
+      test: /\.css$/,
+      use: ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: ['css-loader']
+      })
+    }, {
+      test: /_nm\.less$/,
+      use: ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: ['css-loader', 'postcss-loader', 'less-loader']
+      })
+    }, {
+      test: /^((?!(_nm)).)*\.less$/,
+      use: ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: [
+          path.resolve(__dirname, 'css-module-content'),
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              localIdentName: '[name]__[local]--[hash:base64:5]',
+              importLoaders: 3,
+              camelCase: true
+            }
+          },
+          path.resolve(__dirname, 'css-module-fix'),
+          'postcss-loader',
+          'less-loader'
+        ]
+      })
+    }]
   },
-  devtool: false,
+  devtool: config.devtool || false,
   output: {
     filename: '[name].[chunkhash].js',
-    chunkFilename: '[id].[chunkhash].js'
+    chunkFilename: '[name].[chunkhash].js'
   },
   plugins: [
     new webpack.DefinePlugin({
       'process.env': config.envVariables
     }),
     new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.optimize.UglifyJsPlugin({
-      parallel: true,
-      compress: false,
-      sourceMap: false
-    }),
     // extract css into its own file
     new ExtractTextPlugin({
       filename: '[name].[contenthash].css',
@@ -107,6 +131,16 @@ const webpackConfig = merge(baseWebpackConfig, {
   ]
 });
 
+if (!config.devtool) {
+  webpackConfig.plugins.push(
+    new webpack.optimize.UglifyJsPlugin({
+      parallel: true,
+      compress: false,
+      sourceMap: false
+    })
+  );
+}
+
 // DLL reference
 webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls).map(dllName => {
   return (
@@ -129,8 +163,6 @@ if (config.bundleAnalyzerReport) {
   webpackConfig.plugins.push(new BundleAnalyzerPlugin());
 }
 
-module.exports = webpackConfig;
-
 function templateContent () {
   const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
   const $ = cheerio.load(html);
@@ -139,3 +171,4 @@ function templateContent () {
   return $.html();
 }
 
+module.exports = webpackConfig;

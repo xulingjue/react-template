@@ -1,4 +1,4 @@
-import { model } from 'src/store/store';
+import { model } from 'nmodel';
 
 export default model({
   namespace: 'home',

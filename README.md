@@ -1,6 +1,6 @@
 # React Template
 
-> A template with react + redux + react-router3 + webpack
+> A template with react + nmodel + react-router3 + webpack
 
 ## Installation
 ```bash
@@ -46,58 +46,15 @@ All available commands:
     |- components                 # components
     |- layouts                    # page layouts
     |- routes                     # pages
-        |- components
-        |- containers
-        |- models
-        |- index.js
+        |- pageA
+          |- components
+          |- containers           # container components
+          |- models               # redux model
+          |- index.js
     |- services                   # handle module service logic
     |- static                     # static files
     |- assets                     # global assets, such as images
     |- store                      # redux store
     |- index.html
     |- main.js                    # entry
-```
-
-The redux boilerplate is very boring. To implement a feature, we have to define actions, reducers and constants. For
-convenience, we wrap this into model. A model is just like:
-
-```js
-import { model } from 'src/store/store';
-
-export default model({
-  // namespace is required and need to be unique
-  namespace: 'home',
-
-  // state of the module
-  state: {
-    count: 0,
-    loading: false
-  },
-
-  // side effects, just like actions
-  // each effect will be injected below methods:
-  // - put(action): dispatch an action, the action type corresponds to reducers
-  // - dispatch(action): dispatch an action, the action type must prefixed with namespace, such as 'namespace/actionName'
-  // - update(state): update state directly
-  // - getState(): get global state
-  effects: {
-    increase ({ put }) {
-      put({ type: 'actionName', payload: '' });
-    },
-
-    increaseAsync ({ update }) {
-      update({ loading: true });
-      someApi().then(() => {}).catch(() => {}).then(() => {
-        update({ loading: false });
-      });
-    }
-  },
-
-  // reducers
-  reducers: {
-    actionName (state, action) {
-      return {...state, state};
-    }
-  }
-});
 ```

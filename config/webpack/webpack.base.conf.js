@@ -38,7 +38,10 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         loader: 'babel-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        options: {
+          cacheDirectory: true
+        }
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -58,6 +61,7 @@ module.exports = {
       }
     ]
   },
+  target: 'web',
   plugins: [
     new ProgressBarPlugin({
       format: ' building [:bar]' + chalk.green.bold(':percent') + ' :msg :elapsed',

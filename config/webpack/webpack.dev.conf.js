@@ -7,7 +7,6 @@ const baseWebpackConfig = require('./webpack.base.conf');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
-const loaders = require('./loaders');
 const config = require('../environments')['development'];
 const dllConfig = require('./dll');
 
@@ -30,10 +29,31 @@ Object.keys(baseWebpackConfig.entry).forEach(function (name) {
 
 const webpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: loaders.styleLoaders({
-      sourceMap: config.cssSourceMap,
-      cssModules: config.cssModules
-    })
+    rules: [{
+      test: /\.css$/,
+      use: ['style-loader', 'css-loader']
+    }, {
+      test: /_nm\.less$/,
+      use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader']
+    }, {
+      test: /^((?!(_nm)).)*\.less$/,
+      use: [
+        'style-loader',
+        path.resolve(__dirname, 'css-module-content'),
+        {
+          loader: 'css-loader',
+          options: {
+            modules: true,
+            localIdentName: '[name]__[local]--[hash:base64:5]',
+            importLoaders: 3,
+            camelCase: true
+          }
+        },
+        path.resolve(__dirname, 'css-module-fix'),
+        'postcss-loader',
+        'less-loader'
+      ]
+    }]
   },
   // cheap-module-eval-source-map is faster for development
   devtool: '#cheap-module-eval-source-map',
