@@ -6,6 +6,7 @@ const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const baseWebpackConfig = require('./webpack.base.conf');
@@ -19,6 +20,7 @@ function resolve (dir) {
 }
 
 const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'production',
   module: {
     rules: [{
       test: /\.css$/,
@@ -63,18 +65,10 @@ const webpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': config.envVariables
     }),
-    new webpack.optimize.ModuleConcatenationPlugin(),
     // extract css into its own file
     new ExtractTextPlugin({
-      filename: '[name].[contenthash].css',
+      filename: '[name].[hash].css',
       allChunks: true
-    }),
-    // Compress extracted CSS. We are using this plugin so that possible
-    // duplicated CSS from different components can be deduped.
-    new OptimizeCSSPlugin({
-      cssProcessorOptions: {
-        safe: true
-      }
     }),
     // generate dist index.html with correct asset hash for caching.
     // you can customize output by editing /index.html
@@ -93,26 +87,6 @@ const webpackConfig = merge(baseWebpackConfig, {
       // necessary to consistently work with multiple chunks via CommonsChunkPlugin
       chunksSortMode: 'dependency'
     }),
-    // split vendor js into its own file
-    // new webpack.optimize.CommonsChunkPlugin({
-    //   name: 'vendor',
-    //   minChunks: function (module, count) {
-    //     // any required modules inside node_modules are extracted to vendor
-    //     return (
-    //       module.resource &&
-    //       /\.js$/.test(module.resource) &&
-    //       module.resource.indexOf(
-    //         resolve('node_modules')
-    //       ) === 0
-    //     )
-    //   }
-    // }),
-    // extract webpack runtime and module manifest to its own file in order to
-    // prevent vendor hash from being updated whenever app bundle is updated
-    // new webpack.optimize.CommonsChunkPlugin({
-    //   name: 'manifest',
-    //   chunks: ['vendor']
-    // }),
     // copy custom static assets
     new CopyWebpackPlugin([
       {
@@ -128,18 +102,22 @@ const webpackConfig = merge(baseWebpackConfig, {
         from: '*.dll.js',
       }
     ])
-  ]
+  ],
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: !!config.devtool
+      }),
+      new OptimizeCSSPlugin({
+        cssProcessorOptions: {
+          safe: true
+        }
+      })
+    ]
+  }
 });
-
-if (!config.devtool) {
-  webpackConfig.plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      parallel: true,
-      compress: false,
-      sourceMap: false
-    })
-  );
-}
 
 // DLL reference
 webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls).map(dllName => {
@@ -163,9 +141,8 @@ if (config.bundleAnalyzerReport) {
   webpackConfig.plugins.push(new BundleAnalyzerPlugin());
 }
 
-function templateContent() {
-  const html = fs.readFileSync(resolve('src/index.html')).toString();
-
+function templateContent () {
+  const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
   const $ = cheerio.load(html);
   $('body').append(`<script src='/polyfill.min.js'></script>`);
 

@@ -28,6 +28,7 @@ Object.keys(baseWebpackConfig.entry).forEach(function (name) {
 });
 
 const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'development',
   module: {
     rules: [{
       test: /\.css$/,
@@ -86,7 +87,6 @@ webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls)
     })
   );
 }));
-
 webpackConfig.plugins.push(
   new HtmlWebpackIncludeAssetsPlugin({
     append: false,
@@ -98,9 +98,8 @@ webpackConfig.plugins.push(
 
 module.exports = webpackConfig;
 
-function templateContent() {
-  const html = fs.readFileSync(resolve('src/index.html')).toString();
-
+function templateContent () {
+  const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
   const $ = cheerio.load(html);
   $('body').append(`<script src='/polyfill.js'></script>`);
 
