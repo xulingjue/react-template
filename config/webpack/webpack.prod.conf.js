@@ -6,8 +6,8 @@ const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const baseWebpackConfig = require('./webpack.base.conf');
 const envs = require('../environments');
@@ -24,31 +24,36 @@ const webpackConfig = merge(baseWebpackConfig, {
   module: {
     rules: [{
       test: /\.css$/,
-      use: [MiniCssExtractPlugin.loader, 'css-loader']
+      use: ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: ['css-loader']
+      })
     }, {
       test: /_nm\.less$/,
-      use: [
-        MiniCssExtractPlugin.loader,
-        'css-loader', 'postcss-loader', 'less-loader'
-      ]
+      use: ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: ['css-loader', 'postcss-loader', 'less-loader']
+      })
     }, {
       test: /^((?!(_nm)).)*\.less$/,
-      use: [
-        MiniCssExtractPlugin.loader,
-        path.resolve(__dirname, 'css-module-content'),
-        {
-          loader: 'css-loader',
-          options: {
-            modules: true,
-            localIdentName: '[name]__[local]--[hash:base64:5]',
-            importLoaders: 3,
-            camelCase: true
-          }
-        },
-        path.resolve(__dirname, 'css-module-fix'),
-        'postcss-loader',
-        'less-loader'
-      ]
+      use: ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: [
+          path.resolve(__dirname, 'css-module-content'),
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              localIdentName: '[name]__[local]--[hash:base64:5]',
+              importLoaders: 3,
+              camelCase: true
+            }
+          },
+          path.resolve(__dirname, 'css-module-fix'),
+          'postcss-loader',
+          'less-loader'
+        ]
+      })
     }]
   },
   devtool: config.devtool || false,
@@ -61,8 +66,9 @@ const webpackConfig = merge(baseWebpackConfig, {
       'process.env': config.envVariables
     }),
     // extract css into its own file
-    new MiniCssExtractPlugin({
-      filename: '[name].[contenthash].css'
+    new ExtractTextPlugin({
+      filename: '[name].[hash].css',
+      allChunks: true
     }),
     // generate dist index.html with correct asset hash for caching.
     // you can customize output by editing /index.html
@@ -87,6 +93,13 @@ const webpackConfig = merge(baseWebpackConfig, {
         context: resolve('src/static'),
         from: '**/*',
         ignore: ['.*']
+      },
+      {
+        from: resolve('node_modules/babel-polyfill/dist/polyfill.min.js')
+      },
+      {
+        context: dllConfig.path,
+        from: '*.dll.js',
       }
     ])
   ],
@@ -97,37 +110,31 @@ const webpackConfig = merge(baseWebpackConfig, {
         parallel: true,
         sourceMap: !!config.devtool
       }),
-      new OptimizeCSSPlugin({})
-    ],
-    splitChunks: {
-      cacheGroups: {
-        styles: {
-          name: 'styles',
-          test: /\.css$/,
-          chunks: 'all',
-          enforce: true
+      new OptimizeCSSPlugin({
+        cssProcessorOptions: {
+          safe: true
         }
-      }
-    }
+      })
+    ]
   }
 });
 
 // DLL reference
-// webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls).map(dllName => {
-//   return (
-//     new webpack.DllReferencePlugin({
-//       manifest: require(path.join(resolve(dllConfig.path), dllName + '.json'))
-//     })
-//   );
-// }));
-// webpackConfig.plugins.push(
-//   new HtmlWebpackIncludeAssetsPlugin({
-//     append: false,
-//     assets: [{
-//       path: '', glob: '*.dll.js', globPath: path.join(dllConfig.path, '/')
-//     }]
-//   })
-// );
+webpackConfig.plugins = webpackConfig.plugins.concat(Object.keys(dllConfig.dlls).map(dllName => {
+  return (
+    new webpack.DllReferencePlugin({
+      manifest: require(path.join(resolve(dllConfig.path), dllName + '.json'))
+    })
+  );
+}));
+webpackConfig.plugins.push(
+  new HtmlWebpackIncludeAssetsPlugin({
+    append: false,
+    assets: [{
+      path: '', glob: '*.dll.js', globPath: path.join(dllConfig.path, '/')
+    }]
+  })
+);
 
 if (config.bundleAnalyzerReport) {
   const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
