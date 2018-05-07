@@ -16,6 +16,7 @@ const buildEnv = process.env.BUILD_ENV || 'production';
 const config = envs[buildEnv] || envs['production'];
 
 const webpackConfig = {
+  mode: buildEnv === 'production' ? 'production' : 'development',
   entry: dllConfig.dlls,
 
   output: {

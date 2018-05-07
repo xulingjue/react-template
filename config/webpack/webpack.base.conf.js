@@ -1,7 +1,6 @@
 const path = require('path');
 const chalk = require('chalk');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
-const autoprefixer = require('autoprefixer');
 const config = require('../environments')['base'];
 
 function resolve (dir) {
