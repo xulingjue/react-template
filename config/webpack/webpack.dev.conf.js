@@ -28,6 +28,7 @@ Object.keys(baseWebpackConfig.entry).forEach(function (name) {
 });
 
 const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'development',
   module: {
     rules: [{
       test: /\.css$/,
