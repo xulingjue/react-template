@@ -21,7 +21,8 @@ module.exports = {
     extensions: ['.js', '.jsx', '.json'],
     alias: {
       'src': resolve('src')
-    }
+    },
+    symlinks: false
   },
   module: {
     rules: [
