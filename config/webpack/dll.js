@@ -17,14 +17,7 @@ module.exports = {
       'react-dom',
       'react-redux',
       'react-router',
-      'redbox-react',
-      'redux',
-      'redux-logger',
-      'redux-thunk',
       'prop-types'
-    ],
-    util: [
-      'invariant'
     ]
   },
 
