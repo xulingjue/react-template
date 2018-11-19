@@ -106,13 +106,17 @@ const webpackConfig = merge(baseWebpackConfig, {
   optimization: {
     minimizer: [
       new UglifyJsPlugin({
-        cache: true,
+        // cache: true,
         parallel: true,
-        sourceMap: !!config.devtool
+        sourceMap: !!config.devtool,
+        uglifyOptions: {
+          compress: false
+        }
       }),
       new OptimizeCSSPlugin({
         cssProcessorOptions: {
-          safe: true
+          safe: true,
+          discardDuplicates: true
         }
       })
     ]
