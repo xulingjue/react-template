@@ -7,7 +7,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const baseWebpackConfig = require('./webpack.base.conf');
 const envs = require('../environments');
@@ -24,36 +24,46 @@ const webpackConfig = merge(baseWebpackConfig, {
   module: {
     rules: [{
       test: /\.css$/,
-      use: ExtractTextPlugin.extract({
-        fallback: 'style-loader',
-        use: ['css-loader']
-      })
+      use: [
+        MiniCssExtractPlugin.loader,
+        'css-loader'
+      ]
     }, {
       test: /_nm\.less$/,
-      use: ExtractTextPlugin.extract({
-        fallback: 'style-loader',
-        use: ['css-loader', 'postcss-loader', 'less-loader']
-      })
+      use: [
+        MiniCssExtractPlugin.loader,
+        'css-loader',
+        'postcss-loader',
+        {
+          loader: 'less-loader',
+          options: {
+            javascriptEnabled: true
+          }
+        }
+      ]
     }, {
       test: /^((?!(_nm)).)*\.less$/,
-      use: ExtractTextPlugin.extract({
-        fallback: 'style-loader',
-        use: [
-          path.resolve(__dirname, 'css-module-content'),
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              localIdentName: '[name]__[local]--[hash:base64:5]',
-              importLoaders: 3,
-              camelCase: true
-            }
-          },
-          path.resolve(__dirname, 'css-module-fix'),
-          'postcss-loader',
-          'less-loader'
-        ]
-      })
+      use: [
+        MiniCssExtractPlugin.loader,
+        path.resolve(__dirname, 'css-module-content'),
+        {
+          loader: 'css-loader',
+          options: {
+            modules: true,
+            localIdentName: '[name]__[local]--[hash:base64:5]',
+            importLoaders: 3,
+            camelCase: true
+          }
+        },
+        path.resolve(__dirname, 'css-module-fix'),
+        'postcss-loader',
+        {
+          loader: 'less-loader',
+          options: {
+            javascriptEnabled: true
+          }
+        }
+      ]
     }]
   },
   devtool: config.devtool || false,
@@ -66,9 +76,9 @@ const webpackConfig = merge(baseWebpackConfig, {
       'process.env': config.envVariables
     }),
     // extract css into its own file
-    new ExtractTextPlugin({
-      filename: '[name].[hash].css',
-      allChunks: true
+    new MiniCssExtractPlugin({
+      filename: "[name].[contenthash].css",
+      chunkFilename: '[id].[contenthash].css'
     }),
     // generate dist index.html with correct asset hash for caching.
     // you can customize output by editing /index.html
@@ -104,6 +114,19 @@ const webpackConfig = merge(baseWebpackConfig, {
     ])
   ],
   optimization: {
+    splitChunks: {
+      chunks: 'all',
+      hidePathInfo: true,
+      cacheGroups: {
+        styles: {
+          name: 'common',
+          test: /\.(less|css)$/,
+          chunks: 'all',
+          minChunks: 2,
+          reuseExistingChunk: true,
+        }
+      },
+    },
     minimizer: [
       new UglifyJsPlugin({
         // cache: true,
