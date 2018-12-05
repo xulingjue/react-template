@@ -4,7 +4,7 @@ const path = require('path');
 const opn = require('opn');
 const proxyMiddleware = require('http-proxy-middleware');
 const setup = require('./middlewares/frontendMiddleware');
-const config = require('../config/environments')[process.env.NODE_ENV || 'development'];
+const config = require('../config/environments')['development'];
 
 // default port where dev server listens for incoming traffic
 const port = process.env.PORT || config.port || 9990;
