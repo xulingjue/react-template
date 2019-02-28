@@ -1,6 +1,6 @@
 # React Template
 
-> A template with react + redux + react-router4 + webpack
+> A template with react + redux + react-router4 + webpack4
 
 ## Branches
 We also have different branches that has vary combinations.
@@ -11,11 +11,11 @@ We also have different branches that has vary combinations.
 
 ## Installation
 ```bash
-$ git clone https://github.com/gcfeng/react-template.git <my-project-name> 
+$ git clone https://github.com/gcfeng/react-template.git <my-project-name>
 $ cd <my-project-name>
 ```
 
-When that's done, install the project dependencies. It's recommended that you use [Yarn](#https://yarnpkg.com/) for 
+When that's done, install the project dependencies. It's recommended that you use [Yarn](#https://yarnpkg.com/) for
 deterministic dependency management, but `npm install` will suffice.
 
 ```bash

@@ -29,32 +29,28 @@ let render = () => {
 if (process.env.NODE_ENV === 'development') {
   // Hot module replacement
   if (module.hot) {
-    if (module.hot) {
-      const renderApp = render;
-      const renderError = (error) => {
-        const RedBox = require('redbox-react').default;
+    const renderApp = render;
+    const renderError = (error) => {
+      const RedBox = require('redbox-react').default;
 
-        ReactDOM.render(<RedBox error={error} />, MOUNT_NODE);
-      };
+      ReactDOM.render(<RedBox error={error} />, MOUNT_NODE);
+    };
 
-      render = () => {
-        try {
-          renderApp();
-        } catch (e) {
-          renderError(e);
-        }
-      };
+    render = () => {
+      try {
+        renderApp();
+      } catch (e) {
+        renderError(e);
+      }
+    };
 
-      // Setup hot module replacement
-      module.hot.accept([
-        './components/RootApp'
-      ], () =>
-        setImmediate(() => {
-          ReactDOM.unmountComponentAtNode(MOUNT_NODE);
-          render();
-        })
-      );
-    }
+    // Setup hot module replacement
+    module.hot.accept(['./components/RootApp'], () =>
+      setImmediate(() => {
+        ReactDOM.unmountComponentAtNode(MOUNT_NODE);
+        render();
+      })
+    );
   }
 }
 

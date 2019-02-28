@@ -15,50 +15,20 @@ function resolve (dir) {
 }
 
 // add hot-reload related code to entry chunks
-Object.keys(baseWebpackConfig.entry).forEach(function (name) {
-  baseWebpackConfig.entry[name] = [
-    'eventsource-polyfill',
-    'webpack-hot-middleware/client?reload=true',
-    // bundle the client for webpack-dev-server
-    // and connect to the provided endpoint
-    'webpack/hot/only-dev-server',
-    // bundle the client for hot reloading
-    // only- means to only hot reload for successful updates
-  ].concat(baseWebpackConfig.entry[name]);
-});
+baseWebpackConfig.entry = [
+  'eventsource-polyfill',
+  'webpack-hot-middleware/client?reload=true',
+  // bundle the client for webpack-dev-server
+  // and connect to the provided endpoint
+  'webpack/hot/only-dev-server',
+  // bundle the client for hot reloading
+  // only- means to only hot reload for successful updates
+].concat(baseWebpackConfig.entry);
 
 const webpackConfig = merge(baseWebpackConfig, {
   mode: 'development',
-  module: {
-    rules: [{
-      test: /\.css$/,
-      use: ['style-loader', 'css-loader']
-    }, {
-      test: /_nm\.less$/,
-      use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader']
-    }, {
-      test: /^((?!(_nm)).)*\.less$/,
-      use: [
-        'style-loader',
-        path.resolve(__dirname, 'css-module-content'),
-        {
-          loader: 'css-loader',
-          options: {
-            modules: true,
-            localIdentName: '[name]__[local]--[hash:base64:5]',
-            importLoaders: 3,
-            camelCase: true
-          }
-        },
-        path.resolve(__dirname, 'css-module-fix'),
-        'postcss-loader',
-        'less-loader'
-      ]
-    }]
-  },
   // cheap-module-eval-source-map is faster for development
   devtool: '#cheap-module-eval-source-map',
-  // devtool: 'inline-source-map',
   plugins: [
     new webpack.DefinePlugin({
       'process.env': config.envVariables
@@ -101,7 +71,7 @@ module.exports = webpackConfig;
 function templateContent () {
   const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
   const $ = cheerio.load(html);
-  $('body').append(`<script src='/polyfill.js'></script>`);
+  $('body').append(`<script type="text/javascript" src='/polyfill.js'></script>`);
 
   return $.html();
 }

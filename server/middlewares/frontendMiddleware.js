@@ -34,7 +34,7 @@ const addDevMiddlewares = (app, webpackConfig, next) => {
 
   app.get(/polyfill\.js/, (req, res) => {
     const filename = req.path.replace(/^\//, '');
-    res.sendFile(path.resolve(__dirname, '../../node_modules/babel-polyfill/dist', filename));
+    res.sendFile(path.resolve(__dirname, '../../node_modules/@babel/polyfill/dist', filename));
   });
 
   app.get(/\.dll\.js$/, (req, res) => {

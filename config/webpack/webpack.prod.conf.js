@@ -6,7 +6,7 @@ const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const baseWebpackConfig = require('./webpack.base.conf');
@@ -21,55 +21,9 @@ function resolve (dir) {
 
 const webpackConfig = merge(baseWebpackConfig, {
   mode: 'production',
-  module: {
-    rules: [{
-      test: /\.css$/,
-      use: [
-        MiniCssExtractPlugin.loader,
-        'css-loader'
-      ]
-    }, {
-      test: /_nm\.less$/,
-      use: [
-        MiniCssExtractPlugin.loader,
-        'css-loader',
-        'postcss-loader',
-        {
-          loader: 'less-loader',
-          options: {
-            javascriptEnabled: true
-          }
-        }
-      ]
-    }, {
-      test: /^((?!(_nm)).)*\.less$/,
-      use: [
-        MiniCssExtractPlugin.loader,
-        path.resolve(__dirname, 'css-module-content'),
-        {
-          loader: 'css-loader',
-          options: {
-            modules: true,
-            localIdentName: '[name]__[local]--[hash:base64:5]',
-            importLoaders: 3,
-            camelCase: true
-          }
-        },
-        path.resolve(__dirname, 'css-module-fix'),
-        'postcss-loader',
-        {
-          loader: 'less-loader',
-          options: {
-            javascriptEnabled: true
-          }
-        }
-      ]
-    }]
-  },
-  devtool: config.devtool || false,
   output: {
-    filename: '[name].[chunkhash].js',
-    chunkFilename: '[name].[chunkhash].js'
+    filename: '[name].[chunkhash:8].js',
+    chunkFilename: '[name].[chunkhash:8].js'
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -77,8 +31,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     }),
     // extract css into its own file
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css",
-      chunkFilename: '[id].[contenthash].css'
+      filename: "[name].[contenthash:8].css",
+      chunkFilename: '[id].[contenthash:8].css'
     }),
     // generate dist index.html with correct asset hash for caching.
     // you can customize output by editing /index.html
@@ -105,7 +59,7 @@ const webpackConfig = merge(baseWebpackConfig, {
         ignore: ['.*']
       },
       {
-        from: resolve('node_modules/babel-polyfill/dist/polyfill.min.js')
+        from: resolve('node_modules/@babel/polyfill/dist/polyfill.min.js')
       },
       {
         context: dllConfig.path,
@@ -116,6 +70,7 @@ const webpackConfig = merge(baseWebpackConfig, {
   optimization: {
     splitChunks: {
       chunks: 'all',
+      name: false,
       hidePathInfo: true,
       cacheGroups: {
         styles: {
@@ -128,12 +83,23 @@ const webpackConfig = merge(baseWebpackConfig, {
       },
     },
     minimizer: [
-      new UglifyJsPlugin({
-        // cache: true,
+      new TerserPlugin({
+        cache: true,
         parallel: true,
         sourceMap: !!config.devtool,
-        uglifyOptions: {
-          compress: false
+        terserOptions: {
+          compress: {
+            warnings: false,
+            comparisons: false,
+            inline: 2
+          },
+          mangle: {
+            safari10: true
+          },
+          output: {
+            comments: false,
+            ascii_only: true
+          }
         }
       }),
       new OptimizeCSSPlugin({
@@ -143,7 +109,8 @@ const webpackConfig = merge(baseWebpackConfig, {
         }
       })
     ]
-  }
+  },
+  devtool: config.devtool || false
 });
 
 // DLL reference
@@ -171,7 +138,7 @@ if (config.bundleAnalyzerReport) {
 function templateContent () {
   const html = fs.readFileSync(resolve('src/index.html'), 'utf8');
   const $ = cheerio.load(html);
-  $('body').append(`<script src='/polyfill.min.js'></script>`);
+  $('body').append(`<script type="text/javascript" src='/polyfill.min.js'></script>`);
 
   return $.html();
 }
