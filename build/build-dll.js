@@ -101,7 +101,8 @@ function getBuildDeps () {
     dllDeps.forEach(depName => {
       if (depName.indexOf('/') >= 0) {
         const name = depName.split('/')[0];
-        deps[depName] = dependencies[name] || devDependencies[name];
+        deps[depName] = dependencies[name] || devDependencies[name]
+          || dependencies[depName] || devDependencies[depName];
       } else {
         deps[depName] = dependencies[depName] || devDependencies[depName];
       }
