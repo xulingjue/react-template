@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import styles from './Home.less';
+import styles from './Home.module.less';
 
 export default class Home extends Component {
   static propTypes = {

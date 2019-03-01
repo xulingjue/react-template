@@ -56,5 +56,5 @@ All available commands:
     |- assets                     # global assets, such as images
     |- store                      # redux store
     |- index.html
-    |- main.js                    # entry
+    |- index.js                    # entry
 ```

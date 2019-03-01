@@ -2,7 +2,6 @@
  * Config for Webpack DLL Plugin
  */
 const path = require('path');
-const pkg = require(path.join(__dirname, '..', '..', 'package.json'));
 
 function resolve (dir) {
   return path.resolve(__dirname, '../../', dir);

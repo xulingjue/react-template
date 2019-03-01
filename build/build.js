@@ -13,12 +13,12 @@ rm(path.join(config.outputPath), err => {
     // spinner.stop();
     if (err) throw err;
     process.stdout.write(stats.toString({
-        colors: true,
-        modules: false,
-        children: false,
-        chunks: false,
-        chunkModules: false
-      }) + '\n\n');
+      colors: true,
+      modules: false,
+      children: false,
+      chunks: false,
+      chunkModules: false
+    }) + '\n\n');
 
     console.log(chalk.cyan('  Build complete.\n'));
     console.log(chalk.yellow(
